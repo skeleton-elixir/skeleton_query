@@ -1,11 +1,24 @@
 defmodule SkeletonQuery.MixProject do
   use Mix.Project
 
+  @version "1.0.0"
+  @url "https://github.com/skeleton-elixir/skeleton_query"
+  @maintainers [
+    "Diego Nogueira",
+    "Jhonathas Matos"
+  ]
+
   def project do
     [
+      name: "SkeletonQuery",
       app: :skeleton_query,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.10",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      package: package(),
+      source_url: @url,
+      maintainers: @maintainers,
+      description: "Elixir structure",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -21,8 +34,20 @@ defmodule SkeletonQuery.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"}
+    ]
+  end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp package do
+    [
+      maintainers: @maintainers,
+      licenses: ["MIT"],
+      links: %{github: @url},
+      files: ~w(lib) ++ ~w(CHANGELOG.md LICENSE mix.exs README.md)
     ]
   end
 end
