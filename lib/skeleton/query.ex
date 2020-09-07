@@ -13,12 +13,12 @@ defmodule Skeleton.Query do
       @behaviour Skeleton.Query
       @repo unquote(opts[:repo]) || QueryConfig.repo()
 
-      def all(context), do: Qry.all(__MODULE__, @repo, context)
+      def all(context, opts \\ []), do: Qry.all(__MODULE__, @repo, context, opts)
 
-      def one(context), do: Qry.one(__MODULE__, @repo, context)
+      def one(context, opts \\ []), do: Qry.one(__MODULE__, @repo, context, opts)
 
-      def aggregate(context, aggregate, field),
-        do: Qry.aggregate(__MODULE__, @repo, context, aggregate, field)
+      def aggregate(context, aggregate, field, opts \\ []),
+        do: Qry.aggregate(__MODULE__, @repo, context, aggregate, field, opts)
 
       @before_compile Skeleton.Query
     end
@@ -35,22 +35,28 @@ defmodule Skeleton.Query do
 
   # All
 
-  def all(module, repo, context) do
+  def all(module, repo, context, opts) do
     module
     |> prepare_query(context)
-    |> repo.all()
+    |> repo.all(prefix: get_prefix(opts))
   end
 
-  def one(module, repo, context) do
+  def one(module, repo, context, opts) do
     module
     |> prepare_query(context)
-    |> repo.one()
+    |> repo.one(prefix: get_prefix(opts))
   end
 
-  def aggregate(module, repo, context, aggregate, field) do
+  def aggregate(module, repo, context, aggregate, field, opts) do
     module
     |> prepare_query(context)
-    |> repo.aggregate(aggregate, field)
+    |> repo.aggregate(aggregate, field, prefix: get_prefix(opts))
+  end
+
+  # Get prefix
+
+  defp get_prefix(opts) do
+    opts[:prefix] || "public"
   end
 
   # Prepare query
