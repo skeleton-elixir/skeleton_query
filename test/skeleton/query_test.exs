@@ -49,15 +49,15 @@ defmodule Skeleton.QueryTest do
   end
 
   test "search one sorting by name asc", context do
-    users = UserQuery.all(%{sort_by: ["name"]})
-    assert users == [context.user1, context.user2, context.user3]
+    [u1, u2, u3] = UserQuery.all(%{sort_by: ["name"]})
+    assert [u1.id, u2.id, u3.id] == [context.user1.id, context.user2.id, context.user3.id]
   end
 
   # Query sorting
 
   test "search all sorting by name desc", context do
-    users = UserQuery.all(%{sort_by: ["name_desc"]})
-    assert users == [context.user3, context.user2, context.user1]
+    [u1, u2, u3] = UserQuery.all(%{sort_by: ["name_desc"]})
+    assert [u1.id, u2.id, u3.id] == [context.user3.id, context.user2.id, context.user1.id]
   end
 
   # Aggregate
