@@ -2,7 +2,7 @@
 
 O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo.
 
-## Instalação
+## Instalação e configuração
 
 ```elixir
 # mix.exs
@@ -15,14 +15,23 @@ end
 ```
 
 ```elixir
+# config/config.exs
+
+config :skeleton_query,
+  repo: App.Repo, # Default Repo
+  sort_param: :sort_by
+```
+
+```elixir
 # lib/app/query.ex
 
 defmodule App.Query do
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
     quote do
-      use Skeleton.Query, repo: App.Repo
-      import Ecto.{Changeset, Query}
-      alias App.Repo
+      use Skeleton.Query, unquote(opts)
+
+      import Ecto.Query
+      import App.Query
     end
   end
 end
@@ -34,7 +43,7 @@ end
 # lib/app/accounts/user/user_query.ex
 
 defmodule App.Accounts.UserQuery do
-  use App.Query
+  use App.Query, repo: App.Query # Override the default Repo
 
   def start_query(_context) do
     from(u in Skeleton.App.User)

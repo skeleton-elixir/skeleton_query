@@ -13,6 +13,5 @@ config :skeleton_query, Skeleton.App.Repo,
 config :logger, :console, level: :error
 
 config :skeleton_query,
-  query: Skeleton.App.Query,
   repo: Skeleton.App.Repo,
   sort_param: :sort_by

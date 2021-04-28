@@ -1,8 +1,10 @@
 defmodule Skeleton.App.UserQuery do
   use Skeleton.App.Query
 
+  alias Skeleton.App.User
+
   def start_query(_context) do
-    from(u in Skeleton.App.User)
+    from(u in User)
   end
 
   def filter_by(query, {:id, id}, _context) do

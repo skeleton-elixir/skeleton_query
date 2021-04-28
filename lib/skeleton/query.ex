@@ -1,24 +1,23 @@
 defmodule Skeleton.Query do
-  alias Skeleton.Query.Config, as: QueryConfig
-
-  # Callbacks
+  alias Skeleton.Query.Config
 
   @callback start_query(Map.t()) :: Ecto.Query.t()
 
   defmacro __using__(opts) do
-    alias Skeleton.Query, as: Qry
-    alias Skeleton.Query.Config, as: QueryConfig
+    alias Skeleton.Query
+    alias Skeleton.Query.Config
 
     quote do
       @behaviour Skeleton.Query
-      @repo unquote(opts[:repo]) || QueryConfig.repo()
+      @module __MODULE__
+      @repo unquote(opts[:repo]) || Config.repo() || raise("Repo required")
 
-      def all(context, opts \\ []), do: Qry.all(__MODULE__, @repo, context, opts)
+      def all(context, opts \\ []), do: Query.all(@module, @repo, context, opts)
 
-      def one(context, opts \\ []), do: Qry.one(__MODULE__, @repo, context, opts)
+      def one(context, opts \\ []), do: Query.one(@module, @repo, context, opts)
 
       def aggregate(context, aggregate, field, opts \\ []),
-        do: Qry.aggregate(__MODULE__, @repo, context, aggregate, field, opts)
+        do: Query.aggregate(@module, @repo, context, aggregate, field, opts)
 
       @before_compile Skeleton.Query
     end
@@ -32,8 +31,6 @@ defmodule Skeleton.Query do
       defoverridable filter_by: 3, sort_by: 3
     end
   end
-
-  # All
 
   def all(module, repo, context, opts) do
     module
@@ -80,7 +77,7 @@ defmodule Skeleton.Query do
 
   defp build_sorts(query, module, context) do
     context
-    |> Map.get(QueryConfig.sort_param(), [])
+    |> Map.get(Config.sort_param(), [])
     |> Enum.map(&String.to_atom/1)
     |> Enum.reduce(query, fn o, query ->
       apply(module, :sort_by, [query, o, context])
