@@ -9,7 +9,7 @@ O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo.
 
 def deps do
   [
-    {:skeleton_query, "~> 1.2.0"}
+    {:skeleton_query, "~> 1.3.0"}
   ]
 end
 ```
@@ -86,4 +86,6 @@ App.Accounts.UserQuery.all(%{
 App.Accounts.UserQuery.one(%{id: "123"})
 
 App.Accounts.UserQuery.aggregate(%{admin: true}, :count, :id)
+
+App.Accounts.UserQuery.build_query(%{id: "123"})
 ```

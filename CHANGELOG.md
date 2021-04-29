@@ -1,3 +1,8 @@
+1.3.0
+------
+#### Changes
+* Implements new function build_query to be used with pagination, for example.
+
 1.2.0
 ------
 #### Changes
