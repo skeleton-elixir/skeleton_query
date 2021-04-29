@@ -19,6 +19,8 @@ defmodule Skeleton.Query do
       def aggregate(context, aggregate, field, opts \\ []),
         do: Query.aggregate(@module, @repo, context, aggregate, field, opts)
 
+      def build_query(context), do: Query.build_query(@module, context)
+
       @before_compile Skeleton.Query
     end
   end
@@ -48,6 +50,10 @@ defmodule Skeleton.Query do
     module
     |> prepare_query(context)
     |> repo.aggregate(aggregate, field, prefix: get_prefix(opts))
+  end
+
+  def build_query(module, context) do
+    prepare_query(module, context)
   end
 
   # Get prefix

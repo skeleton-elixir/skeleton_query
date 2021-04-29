@@ -67,6 +67,13 @@ defmodule Skeleton.QueryTest do
     assert total == 2
   end
 
+  # Build Query
+
+  test "build query from filter by id", context do
+    query = UserQuery.build_query(%{id: context.user1.id})
+    assert %Ecto.Query{} = query
+  end
+
   defp create_user(params) do
     %User{
       id: params[:id],
