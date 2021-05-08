@@ -12,14 +12,14 @@ defmodule Skeleton.Query do
       @module __MODULE__
       @repo unquote(opts[:repo]) || Config.repo() || raise("Repo required")
 
-      def all(context, opts \\ []), do: Query.all(@module, @repo, context, opts)
+      def all(params, opts \\ []), do: Query.all(@module, @repo, params, opts)
 
-      def one(context, opts \\ []), do: Query.one(@module, @repo, context, opts)
+      def one(params, opts \\ []), do: Query.one(@module, @repo, params, opts)
 
-      def aggregate(context, aggregate, field, opts \\ []),
-        do: Query.aggregate(@module, @repo, context, aggregate, field, opts)
+      def aggregate(params, aggregate, field, opts \\ []),
+        do: Query.aggregate(@module, @repo, params, aggregate, field, opts)
 
-      def build_query(context), do: Query.build_query(@module, context)
+      def build_query(params), do: Query.build_query(@module, params)
 
       @before_compile Skeleton.Query
     end
@@ -34,26 +34,26 @@ defmodule Skeleton.Query do
     end
   end
 
-  def all(module, repo, context, opts) do
+  def all(module, repo, params, opts) do
     module
-    |> prepare_query(context)
+    |> prepare_query(params)
     |> repo.all(prefix: get_prefix(opts))
   end
 
-  def one(module, repo, context, opts) do
+  def one(module, repo, params, opts) do
     module
-    |> prepare_query(context)
+    |> prepare_query(params)
     |> repo.one(prefix: get_prefix(opts))
   end
 
-  def aggregate(module, repo, context, aggregate, field, opts) do
+  def aggregate(module, repo, params, aggregate, field, opts) do
     module
-    |> prepare_query(context)
+    |> prepare_query(params)
     |> repo.aggregate(aggregate, field, prefix: get_prefix(opts))
   end
 
-  def build_query(module, context) do
-    prepare_query(module, context)
+  def build_query(module, params) do
+    prepare_query(module, params)
   end
 
   # Get prefix
@@ -64,29 +64,40 @@ defmodule Skeleton.Query do
 
   # Prepare query
 
-  defp prepare_query(module, context) do
-    context
+  defp prepare_query(module, params) do
+    params = stringfy_map(params)
+
+    params
     |> module.start_query()
-    |> build_filters(module, context)
-    |> build_sorts(module, context)
+    |> build_filters(module, params)
+    |> build_sorts(module, params)
   end
 
   # Build filters
 
-  defp build_filters(query, module, context) do
-    Enum.reduce(context, query, fn f, query ->
-      apply(module, :filter_by, [query, f, context])
+  defp build_filters(query, module, params) do
+    Enum.reduce(params, query, fn f, query ->
+      apply(module, :filter_by, [query, f, params])
     end)
   end
 
   # Build sorts
 
-  defp build_sorts(query, module, context) do
-    context
+  defp build_sorts(query, module, params) do
+    params
     |> Map.get(Config.sort_param(), [])
-    |> Enum.map(&String.to_atom/1)
     |> Enum.reduce(query, fn o, query ->
-      apply(module, :sort_by, [query, o, context])
+      apply(module, :sort_by, [query, o, params])
     end)
+  end
+
+  # Stringfy map
+
+  defp stringfy_map(map) do
+    stringkeys = fn {k, v}, acc ->
+      Map.put_new(acc, to_string(k), v)
+    end
+
+    Enum.reduce(map, %{}, stringkeys)
   end
 end
