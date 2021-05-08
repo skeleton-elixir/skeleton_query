@@ -1,3 +1,8 @@
+1.4.0
+------
+#### Changes
+* Changed query matching.
+
 1.3.0
 ------
 #### Changes
