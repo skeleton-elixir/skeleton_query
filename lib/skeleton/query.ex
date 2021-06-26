@@ -19,7 +19,7 @@ defmodule Skeleton.Query do
       def aggregate(params, aggregate, field, opts \\ []),
         do: Query.aggregate(@module, @repo, params, aggregate, field, opts)
 
-      def build_query(params), do: Query.build_query(@module, params)
+      def build_query(params, opts \\ []), do: Query.build_query(@module, params, opts)
 
       @before_compile Skeleton.Query
     end
@@ -36,24 +36,24 @@ defmodule Skeleton.Query do
 
   def all(module, repo, params, opts) do
     module
-    |> prepare_query(params)
+    |> prepare_query(params, opts)
     |> repo.all(prefix: get_prefix(opts))
   end
 
   def one(module, repo, params, opts) do
     module
-    |> prepare_query(params)
+    |> prepare_query(params, opts)
     |> repo.one(prefix: get_prefix(opts))
   end
 
   def aggregate(module, repo, params, aggregate, field, opts) do
     module
-    |> prepare_query(params)
+    |> prepare_query(params, opts)
     |> repo.aggregate(aggregate, field, prefix: get_prefix(opts))
   end
 
-  def build_query(module, params) do
-    prepare_query(module, params)
+  def build_query(module, params, opts) do
+    prepare_query(module, params, opts)
   end
 
   # Get prefix
@@ -64,13 +64,23 @@ defmodule Skeleton.Query do
 
   # Prepare query
 
-  defp prepare_query(module, params) do
+  defp prepare_query(module, params, opts) do
     params = stringfy_map(params)
 
-    params
-    |> module.start_query()
+    module
+    |> build_start_query(params, opts)
     |> build_filters(module, params)
     |> build_sorts(module, params)
+  end
+
+  # Start query
+
+  defp build_start_query(module, params, opts) do
+    if start_query = opts[:start_query] do
+      start_query
+    else
+      module.start_query(params)
+    end
   end
 
   # Build filters

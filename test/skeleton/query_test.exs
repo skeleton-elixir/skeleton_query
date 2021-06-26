@@ -20,6 +20,12 @@ defmodule Skeleton.QueryTest do
     assert user.id == context.user1.id
   end
 
+  test "search all changing start query", context do
+    query = from(u in User, where: [id: ^context.user1.id])
+    [user] = UserQuery.all(%{}, start_query: query)
+    assert user.id == context.user1.id
+  end
+
   test "search all filtering by admin", context do
     users = UserQuery.all(%{admin: true})
     assert length(users) == 2
@@ -38,6 +44,12 @@ defmodule Skeleton.QueryTest do
 
   test "search one filtering by id", context do
     user = UserQuery.one(%{id: context.user1.id})
+    assert user.id == context.user1.id
+  end
+
+  test "search one changing start query", context do
+    query = from(u in User, where: [id: ^context.user1.id])
+    user = UserQuery.one(%{}, start_query: query)
     assert user.id == context.user1.id
   end
 
@@ -62,8 +74,14 @@ defmodule Skeleton.QueryTest do
 
   # Aggregate
 
-  test "aggregate all filtering by admin"  do
+  test "aggregate all filtering by admin" do
     total = UserQuery.aggregate(%{admin: true}, :count, :id)
+    assert total == 2
+  end
+
+  test "aggregate all changing start query" do
+    query = from(u in User, where: [admin: true])
+    total = UserQuery.aggregate(%{}, :count, :id, start_query: query)
     assert total == 2
   end
 
