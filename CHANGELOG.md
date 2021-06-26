@@ -1,3 +1,8 @@
+1.5.0
+------
+#### Changes
+* Added start query options
+
 1.4.0
 ------
 #### Changes

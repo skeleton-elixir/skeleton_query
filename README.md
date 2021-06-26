@@ -9,7 +9,7 @@ O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo.
 
 def deps do
   [
-    {:skeleton_query, "~> 1.4.0"}
+    {:skeleton_query, "~> 1.5.0"}
   ]
 end
 ```
