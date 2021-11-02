@@ -1,4 +1,8 @@
 defmodule Skeleton.Query do
+  @moduledoc """
+  Skeleton Query module
+  """
+
   alias Skeleton.Query.Config
 
   @callback start_query(Map.t()) :: Ecto.Query.t()

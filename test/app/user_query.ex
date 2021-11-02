@@ -1,4 +1,6 @@
 defmodule Skeleton.App.UserQuery do
+  @moduledoc false
+
   use Skeleton.App.Query
 
   alias Skeleton.App.User

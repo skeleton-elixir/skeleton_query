@@ -37,14 +37,14 @@ defmodule SkeletonQuery.MixProject do
     [
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0", only: :test},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp description() do
     "O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo."
   end
-
 
   defp elixirc_paths(:test), do: ["lib", "test/app"]
   defp elixirc_paths(_), do: ["lib"]
