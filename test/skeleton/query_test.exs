@@ -1,4 +1,6 @@
 defmodule Skeleton.QueryTest do
+  @moduledoc false
+
   use Skeleton.Query.TestCase
   alias Skeleton.App.{User, UserQuery}
 
@@ -101,5 +103,12 @@ defmodule Skeleton.QueryTest do
     }
     |> change(params)
     |> Repo.insert!()
+  end
+
+  # End query
+
+  test "search all with end query", context do
+    [u1, u2, u3] = UserQuery.all()
+    assert [u1.id, u2.id, u3.id] == [context.user3.id, context.user2.id, context.user1.id]
   end
 end

@@ -5,27 +5,31 @@ defmodule Skeleton.App.UserQuery do
 
   alias Skeleton.App.User
 
-  def start_query(_context) do
+  def start_query(_params) do
     from(u in User)
   end
 
-  def filter_by(query, {"id", id}, _context) do
+  def end_query(query, _params) do
+    order_by(query, desc: :name)
+  end
+
+  def filter_by(query, {"id", id}, _params) do
     where(query, id: ^id)
   end
 
-  def filter_by(query, {"admin", admin}, _context) do
+  def filter_by(query, {"admin", admin}, _params) do
     where(query, admin: ^admin)
   end
 
-  def filter_by(query, {"name", name}, _context) do
-    where(query, name: ^name)
-  end
-
-  def sort_by(query, "name", _context) do
+  def sort_by(query, "name", _params) do
     order_by(query, asc: :name)
   end
 
-  def sort_by(query, "name_desc", _context) do
+  def compose(query, {"name", name}, _params) do
+    where(query, name: ^name)
+  end
+
+  def compose(query, {"sort_by", "name_desc"}, _params) do
     order_by(query, desc: :name)
   end
 end

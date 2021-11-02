@@ -2,6 +2,8 @@
 
 O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo.
 
+OBS: Cuidado ao passar todo o `params` para dentro do seu arquivo `Query`, pois ele não estará tratando parâmetros permitidos. Aconselhamos  tratar em sua camada Web antes.
+
 ## Instalação e configuração
 
 ```elixir
@@ -45,31 +47,35 @@ end
 defmodule App.Accounts.UserQuery do
   use App.Query, repo: App.Query # Override the default Repo
 
-  def start_query(_context) do
+  def start_query(_params) do
     from(u in Skeleton.App.User)
+  end
+
+  def end_query(query, _params) do
+    order_by(query, asc: :name)
   end
 
   # Filters
 
-  def filter_by(query, {"id", id}, _context) do
+  def filter_by(query, {"id", id}, _params) do
     where(query, id: ^id)
   end
 
-  def filter_by(query, {"admin", admin}, _context) do
+  def filter_by(query, {"admin", admin}, _params) do
     where(query, admin: ^admin)
   end
 
-  def filter_by(query, {"name", name}, _context) do
+  def compose(query, {"name", name}, _params) do
     where(query, name: ^name)
   end
 
   # Sorts
 
-  def sort_by(query, "name", _context) do
+  def sort_by(query, "name", _params) do
     order_by(query, asc: :name)
   end
 
-  def sort_by(query, "name_desc", _context) do
+  def sort_by(query, "name_desc", _params) do
     order_by(query, desc: :name)
   end
 end

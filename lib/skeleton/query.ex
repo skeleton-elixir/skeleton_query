@@ -16,9 +16,9 @@ defmodule Skeleton.Query do
       @module __MODULE__
       @repo unquote(opts[:repo]) || Config.repo() || raise("Repo required")
 
-      def all(params, opts \\ []), do: Query.all(@module, @repo, params, opts)
+      def all(params \\ %{}, opts \\ []), do: Query.all(@module, @repo, params, opts)
 
-      def one(params, opts \\ []), do: Query.one(@module, @repo, params, opts)
+      def one(params \\ %{}, opts \\ []), do: Query.one(@module, @repo, params, opts)
 
       def aggregate(params, aggregate, field, opts \\ []),
         do: Query.aggregate(@module, @repo, params, aggregate, field, opts)
@@ -31,10 +31,12 @@ defmodule Skeleton.Query do
 
   defmacro __before_compile__(_) do
     quote do
+      def compose(query, _, _args), do: query
       def filter_by(query, _, _args), do: query
       def sort_by(query, _, _args), do: query
+      def end_query(query, _, _args), do: query
 
-      defoverridable filter_by: 3, sort_by: 3
+      defoverridable compose: 3, filter_by: 3, sort_by: 3, end_query: 3
     end
   end
 
@@ -73,8 +75,11 @@ defmodule Skeleton.Query do
 
     module
     |> build_start_query(params, opts)
+    |> build_composers(module, params)
+    |> build_sort_by_composers(module, params)
     |> build_filters(module, params)
     |> build_sorts(module, params)
+    |> build_end_query(module, params)
   end
 
   # Start query
@@ -85,6 +90,24 @@ defmodule Skeleton.Query do
     else
       module.start_query(params)
     end
+  end
+
+  # Build composers
+
+  defp build_composers(query, module, params) do
+    Enum.reduce(params, query, fn f, query ->
+      apply(module, :compose, [query, f, params])
+    end)
+  end
+
+  # Build sort by composers
+
+  defp build_sort_by_composers(query, module, params) do
+    params
+    |> Map.get(Config.sort_param(), [])
+    |> Enum.reduce(query, fn o, query ->
+      apply(module, :compose, [query, {Config.sort_param(), o}, params])
+    end)
   end
 
   # Build filters
@@ -103,6 +126,12 @@ defmodule Skeleton.Query do
     |> Enum.reduce(query, fn o, query ->
       apply(module, :sort_by, [query, o, params])
     end)
+  end
+
+  # Start query
+
+  defp build_end_query(query, module, params) do
+    module.end_query(query, params)
   end
 
   # Stringfy map
