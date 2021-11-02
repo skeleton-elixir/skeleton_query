@@ -71,7 +71,11 @@ defmodule Skeleton.Query do
   # Prepare query
 
   defp prepare_query(module, params, opts) do
-    params = stringfy_map(params)
+    params =
+      params
+      |> stringfy_map()
+      |> allow_params(opts[:allow])
+      |> deny_params(opts[:deny])
 
     module
     |> build_start_query(params, opts)
@@ -142,5 +146,23 @@ defmodule Skeleton.Query do
     end
 
     Enum.reduce(map, %{}, stringkeys)
+  end
+
+  # Allow params
+
+  defp allow_params(params, nil), do: params
+
+  defp allow_params(params, allow) do
+    allow = Enum.map(allow, &to_string/1)
+    Map.take(params, allow)
+  end
+
+  # deny params
+
+  defp deny_params(params, nil), do: params
+
+  defp deny_params(params, deny) do
+    deny = Enum.map(deny, &to_string/1)
+    Map.drop(params, deny)
   end
 end

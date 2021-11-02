@@ -2,7 +2,7 @@
 
 O Skeleton Query ajuda a criar composes para queries feitas usando o Ecto.Repo.
 
-OBS: Cuidado ao passar todo o `params` para dentro do seu arquivo `Query`, pois ele não estará tratando parâmetros permitidos. Aconselhamos  tratar em sua camada Web antes.
+OBS: Cuidado ao passar todo o `params` para dentro do seu arquivo `Query`, pois ele não estará tratando parâmetros permitidos. Utilize as opções `allow` e `deny` dos métodos `all`, `one` e `aggregate` do Skeleton Query para resolver essa questão.
 
 ## Instalação e configuração
 
@@ -89,9 +89,9 @@ App.Accounts.UserQuery.all(%{
   sort_by: ["inserted_at", "name"]
 })
 
-App.Accounts.UserQuery.one(%{id: "123"})
+App.Accounts.UserQuery.one(%{id: "123"}, allow: [:id])
 
-App.Accounts.UserQuery.aggregate(%{admin: true}, :count, :id)
+App.Accounts.UserQuery.aggregate(%{admin: true}, :count, :id, deny: [:email])
 
-App.Accounts.UserQuery.build_query(%{id: "123"})
+App.Accounts.UserQuery.build_query(%{id: "123"}, deny: [:email])
 ```

@@ -4,12 +4,12 @@ defmodule Skeleton.QueryTest do
   use Skeleton.Query.TestCase
   alias Skeleton.App.{User, UserQuery}
 
-  setup context do
+  setup ctx do
     user1 = create_user(id: Ecto.UUID.generate(), name: "User A", admin: true)
     user2 = create_user(id: Ecto.UUID.generate(), name: "User B", admin: true)
     user3 = create_user(id: Ecto.UUID.generate(), name: "User C")
 
-    context
+    ctx
     |> Map.put(:user1, user1)
     |> Map.put(:user2, user2)
     |> Map.put(:user3, user3)
@@ -17,61 +17,61 @@ defmodule Skeleton.QueryTest do
 
   # Query all
 
-  test "search all filtering by id", context do
-    [user] = UserQuery.all(%{id: context.user1.id})
-    assert user.id == context.user1.id
+  test "search all filtering by id", ctx do
+    [user] = UserQuery.all(%{id: ctx.user1.id})
+    assert user.id == ctx.user1.id
   end
 
-  test "search all changing start query", context do
-    query = from(u in User, where: [id: ^context.user1.id])
+  test "search all changing start query", ctx do
+    query = from(u in User, where: [id: ^ctx.user1.id])
     [user] = UserQuery.all(%{}, start_query: query)
-    assert user.id == context.user1.id
+    assert user.id == ctx.user1.id
   end
 
-  test "search all filtering by admin", context do
+  test "search all filtering by admin", ctx do
     users = UserQuery.all(%{admin: true})
     assert length(users) == 2
-    assert Enum.find(users, &(&1.id == context.user1.id))
-    assert Enum.find(users, &(&1.id == context.user2.id))
+    assert Enum.find(users, &(&1.id == ctx.user1.id))
+    assert Enum.find(users, &(&1.id == ctx.user2.id))
   end
 
-  test "search all filtering by id and admin", context do
-    [user] = UserQuery.all(%{name: context.user1.name, admin: true})
-    assert user.id == context.user1.id
+  test "search all filtering by id and admin", ctx do
+    [user] = UserQuery.all(%{name: ctx.user1.name, admin: true})
+    assert user.id == ctx.user1.id
 
-    assert UserQuery.all(%{id: context.user3.id, admin: true}) == []
+    assert UserQuery.all(%{id: ctx.user3.id, admin: true}) == []
   end
 
   # Query one
 
-  test "search one filtering by id", context do
-    user = UserQuery.one(%{id: context.user1.id})
-    assert user.id == context.user1.id
+  test "search one filtering by id", ctx do
+    user = UserQuery.one(%{id: ctx.user1.id})
+    assert user.id == ctx.user1.id
   end
 
-  test "search one changing start query", context do
-    query = from(u in User, where: [id: ^context.user1.id])
+  test "search one changing start query", ctx do
+    query = from(u in User, where: [id: ^ctx.user1.id])
     user = UserQuery.one(%{}, start_query: query)
-    assert user.id == context.user1.id
+    assert user.id == ctx.user1.id
   end
 
-  test "search one filtering by id and admin", context do
-    user = UserQuery.one(%{name: context.user1.name, admin: true})
-    assert user.id == context.user1.id
+  test "search one filtering by id and admin", ctx do
+    user = UserQuery.one(%{name: ctx.user1.name, admin: true})
+    assert user.id == ctx.user1.id
 
-    assert UserQuery.one(%{id: context.user3.id, admin: true}) == nil
+    assert UserQuery.one(%{id: ctx.user3.id, admin: true}) == nil
   end
 
-  test "search one sorting by name asc", context do
+  test "search one sorting by name asc", ctx do
     [u1, u2, u3] = UserQuery.all(%{sort_by: ["name"]})
-    assert [u1.id, u2.id, u3.id] == [context.user1.id, context.user2.id, context.user3.id]
+    assert [u1.id, u2.id, u3.id] == [ctx.user1.id, ctx.user2.id, ctx.user3.id]
   end
 
   # Query sorting
 
-  test "search all sorting by name desc", context do
+  test "search all sorting by name desc", ctx do
     [u1, u2, u3] = UserQuery.all(%{sort_by: ["name_desc"]})
-    assert [u1.id, u2.id, u3.id] == [context.user3.id, context.user2.id, context.user1.id]
+    assert [u1.id, u2.id, u3.id] == [ctx.user3.id, ctx.user2.id, ctx.user1.id]
   end
 
   # Aggregate
@@ -89,8 +89,8 @@ defmodule Skeleton.QueryTest do
 
   # Build Query
 
-  test "build query from filter by id", context do
-    query = UserQuery.build_query(%{id: context.user1.id})
+  test "build query from filter by id", ctx do
+    query = UserQuery.build_query(%{id: ctx.user1.id})
     assert %Ecto.Query{} = query
   end
 
@@ -107,8 +107,29 @@ defmodule Skeleton.QueryTest do
 
   # End query
 
-  test "search all with end query", context do
+  test "search all with end query", ctx do
     [u1, u2, u3] = UserQuery.all()
-    assert [u1.id, u2.id, u3.id] == [context.user3.id, context.user2.id, context.user1.id]
+    assert [u1.id, u2.id, u3.id] == [ctx.user3.id, ctx.user2.id, ctx.user1.id]
+  end
+
+  # Allow params
+
+  test "search all allowing some params", ctx do
+    assert UserQuery.all(%{id: ctx.user1.id, admin: false}) == []
+
+    [user] = UserQuery.all(%{id: ctx.user1.id, admin: false}, allow: [:id])
+    assert user.id == ctx.user1.id
+
+    total = UserQuery.aggregate(%{id: ctx.user1.id, admin: true}, :count, :id, allow: [:admin])
+    assert total == 2
+  end
+
+  # Allow params
+
+  test "search all denying some params", ctx do
+    assert UserQuery.all(%{id: ctx.user1.id, admin: false}) == []
+
+    [user] = UserQuery.all(%{id: ctx.user1.id, admin: false}, deny: [:admin])
+    assert user.id == ctx.user1.id
   end
 end
