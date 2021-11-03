@@ -8,6 +8,8 @@ defmodule Skeleton.App.User do
     field :email, :string
     field :admin, :boolean
 
+    has_many(:posts, Skeleton.App.Post)
+
     timestamps()
   end
 end

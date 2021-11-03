@@ -2,12 +2,12 @@ defmodule Skeleton.QueryTest do
   @moduledoc false
 
   use Skeleton.Query.TestCase
-  alias Skeleton.App.{User, UserQuery}
+  alias Skeleton.App.{User, Post, UserQuery, PostQuery}
 
   setup ctx do
     user1 = create_user(id: Ecto.UUID.generate(), name: "User A", admin: true)
     user2 = create_user(id: Ecto.UUID.generate(), name: "User B", admin: true)
-    user3 = create_user(id: Ecto.UUID.generate(), name: "User C")
+    user3 = create_user(id: Ecto.UUID.generate(), name: "User C", admin: false)
 
     ctx
     |> Map.put(:user1, user1)
@@ -94,17 +94,6 @@ defmodule Skeleton.QueryTest do
     assert %Ecto.Query{} = query
   end
 
-  defp create_user(params) do
-    %User{
-      id: params[:id],
-      name: "Name #{params[:id]}",
-      email: "email-#{params[:id]}@email.com",
-      admin: false
-    }
-    |> change(params)
-    |> Repo.insert!()
-  end
-
   # End query
 
   test "search all with end query", ctx do
@@ -131,5 +120,44 @@ defmodule Skeleton.QueryTest do
 
     [user] = UserQuery.all(%{id: ctx.user1.id, admin: false}, deny: [:admin])
     assert user.id == ctx.user1.id
+  end
+
+  # Join new
+
+  test "search all using join new", ctx do
+    post1 = create_post(%{id: Ecto.UUID.generate(), user_id: ctx.user1.id})
+    post2 = create_post(%{id: Ecto.UUID.generate(), user_id: ctx.user2.id})
+    _post3 = create_post(%{id: Ecto.UUID.generate(), user_id: ctx.user3.id})
+
+    [p1, p2] = PostQuery.all(%{user_admin: true, sort_by: ["user_name_desc"]})
+
+    assert p1.id == post2.id
+    assert p2.id == post1.id
+  end
+
+  # Crete user
+
+  defp create_user(params) do
+    %User{
+      id: params[:id],
+      name: "Name #{params[:id]}",
+      email: "email-#{params[:id]}@email.com",
+      admin: false
+    }
+    |> change(params)
+    |> Repo.insert!()
+  end
+
+  # Crete post
+
+  defp create_post(params) do
+    %Post{
+      id: params[:id],
+      title: "Title #{params[:id]}",
+      body: "Body...",
+      user_id: params[:user_id]
+    }
+    |> change(params)
+    |> Repo.insert!()
   end
 end

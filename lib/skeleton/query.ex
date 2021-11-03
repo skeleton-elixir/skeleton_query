@@ -25,18 +25,20 @@ defmodule Skeleton.Query do
 
       def build_query(params, opts \\ []), do: Query.build_query(@module, params, opts)
 
+      def end_query(query, _params), do: query
+
       @before_compile Skeleton.Query
+      defoverridable end_query: 2
     end
   end
 
   defmacro __before_compile__(_) do
     quote do
-      def compose(query, _, _args), do: query
-      def filter_by(query, _, _args), do: query
-      def sort_by(query, _, _args), do: query
-      def end_query(query, _, _args), do: query
+      def compose(query, _, _params), do: query
+      def filter_by(query, _, _params), do: query
+      def sort_by(query, _, _params), do: query
 
-      defoverridable compose: 3, filter_by: 3, sort_by: 3, end_query: 3
+      defoverridable compose: 3, filter_by: 3, sort_by: 3, end_query: 2
     end
   end
 
