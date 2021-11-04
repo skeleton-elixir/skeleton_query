@@ -35,10 +35,8 @@ defmodule Skeleton.Query do
   defmacro __before_compile__(_) do
     quote do
       def compose(query, _, _params), do: query
-      def filter_by(query, _, _params), do: query
-      def sort_by(query, _, _params), do: query
 
-      defoverridable compose: 3, filter_by: 3, sort_by: 3, end_query: 2
+      defoverridable compose: 3, end_query: 2
     end
   end
 
@@ -83,8 +81,6 @@ defmodule Skeleton.Query do
     |> build_start_query(params, opts)
     |> build_composers(module, params)
     |> build_sort_by_composers(module, params)
-    |> build_filters(module, params)
-    |> build_sorts(module, params)
     |> build_end_query(module, params)
   end
 
@@ -113,24 +109,6 @@ defmodule Skeleton.Query do
     |> Map.get(Config.sort_param(), [])
     |> Enum.reduce(query, fn o, query ->
       apply(module, :compose, [query, {Config.sort_param(), o}, params])
-    end)
-  end
-
-  # Build filters
-
-  defp build_filters(query, module, params) do
-    Enum.reduce(params, query, fn f, query ->
-      apply(module, :filter_by, [query, f, params])
-    end)
-  end
-
-  # Build sorts
-
-  defp build_sorts(query, module, params) do
-    params
-    |> Map.get(Config.sort_param(), [])
-    |> Enum.reduce(query, fn o, query ->
-      apply(module, :sort_by, [query, o, params])
     end)
   end
 

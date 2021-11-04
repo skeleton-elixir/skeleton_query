@@ -9,10 +9,6 @@ defmodule Skeleton.App.PostQuery do
     from(u in Post)
   end
 
-  def filter_by(query, {"id", id}, _params) do
-    where(query, id: ^id)
-  end
-
   def compose(query, {"user_admin", admin}, _params) do
     query
     |> join_user()
