@@ -74,6 +74,8 @@ defmodule Skeleton.Query do
     params =
       params
       |> stringfy_map()
+      |> allow_sort_by_params(opts[:allow])
+      |> deny_sort_by_params(opts[:deny])
       |> allow_params(opts[:allow])
       |> deny_params(opts[:deny])
 
@@ -128,12 +130,60 @@ defmodule Skeleton.Query do
     Enum.reduce(map, %{}, stringkeys)
   end
 
+  # Allow sort by params
+
+  defp allow_sort_by_params(params, nil), do: params
+
+  defp allow_sort_by_params(params, allow) do
+    allow
+    |> Keyword.get(String.to_atom(Config.sort_param()))
+    |> case do
+      p when is_list(p) ->
+        allow = Enum.map(p, &to_string/1)
+        sort_params = params[Config.sort_param()] || []
+        allowed_sort = sort_params -- sort_params -- allow
+        Map.put(params, Config.sort_param(), allowed_sort)
+
+      _ ->
+        params
+    end
+  end
+
+  # Deny sort by params
+
+  defp deny_sort_by_params(params, nil), do: params
+
+  defp deny_sort_by_params(params, deny) do
+    deny
+    |> Keyword.get(String.to_atom(Config.sort_param()))
+    |> case do
+      p when is_list(p) ->
+        deny = Enum.map(p, &to_string/1)
+        sort_params = params[Config.sort_param()] || []
+        allowed_sort = sort_params -- deny
+
+        Map.put(params, Config.sort_param(), allowed_sort)
+
+      _ ->
+        params
+    end
+  end
+
   # Allow params
 
   defp allow_params(params, nil), do: params
 
   defp allow_params(params, allow) do
-    allow = Enum.map(allow, &to_string/1)
+    allow =
+      Enum.map(allow, fn a ->
+        case a do
+          a when is_atom(a) -> to_string(a)
+          a when is_binary(a) -> a
+          {k, _} -> to_string(k)
+          _ -> ""
+        end
+      end)
+
     Map.take(params, allow)
   end
 
@@ -142,7 +192,16 @@ defmodule Skeleton.Query do
   defp deny_params(params, nil), do: params
 
   defp deny_params(params, deny) do
-    deny = Enum.map(deny, &to_string/1)
+    deny =
+      Enum.map(deny, fn a ->
+        case a do
+          a when is_atom(a) -> to_string(a)
+          a when is_binary(a) -> a
+          {k, _} -> to_string(k)
+          _ -> ""
+        end
+      end)
+
     Map.drop(params, deny)
   end
 end

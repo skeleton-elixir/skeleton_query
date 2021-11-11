@@ -32,4 +32,8 @@ defmodule Skeleton.App.UserQuery do
   def compose(query, {"sort_by", "name_desc"}, _params) do
     order_by(query, desc: :name)
   end
+
+  def compose(query, {"sort_by", "wrong_sort_by"}, _params) do
+    where(query, id: ^Ecto.UUID.generate())
+  end
 end

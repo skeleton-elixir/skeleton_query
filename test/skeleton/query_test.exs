@@ -108,18 +108,73 @@ defmodule Skeleton.QueryTest do
 
     [user] = UserQuery.all(%{id: ctx.user1.id, admin: false}, allow: [:id])
     assert user.id == ctx.user1.id
+  end
 
+  test "aggregate allowing some params", ctx do
     total = UserQuery.aggregate(%{id: ctx.user1.id, admin: true}, :count, :id, allow: [:admin])
     assert total == 2
   end
 
-  # Allow params
+  test "search all allowing some params with sort_by", ctx do
+    res =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by"]},
+        allow: [:id, sort_by: [:wrong_sort_by]]
+      )
+
+    assert res == []
+
+    res =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by"]},
+        allow: [:id, :sort_by]
+      )
+
+    assert res == []
+
+    [user] =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by"]},
+        allow: [:id]
+      )
+
+    assert user.id == ctx.user1.id
+  end
+
+  # Deny params
 
   test "search all denying some params", ctx do
     assert UserQuery.all(%{id: ctx.user1.id, admin: false}) == []
 
     [user] = UserQuery.all(%{id: ctx.user1.id, admin: false}, deny: [:admin])
     assert user.id == ctx.user1.id
+  end
+
+  test "aggregate denying some params", ctx do
+    total = UserQuery.aggregate(%{id: ctx.user1.id, admin: true}, :count, :id, deny: [:admin])
+    assert total == 1
+  end
+
+  test "search all denying some params with sort_by", ctx do
+    [user] =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by"]},
+        deny: [sort_by: [:wrong_sort_by]]
+      )
+
+    assert user.id == ctx.user1.id
+
+    [user] =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by"]},
+        deny: [:sort_by]
+      )
+
+    assert user.id == ctx.user1.id
+
+    [u1, u2, u3] =
+      UserQuery.all(%{id: ctx.user1.id, sort_by: ["wrong_sort_by", "user_name_desc"]},
+        deny: [:id, sort_by: [:wrong_sort_by]]
+      )
+
+    assert u1.id == ctx.user3.id
+    assert u2.id == ctx.user2.id
+    assert u3.id == ctx.user1.id
   end
 
   # Join new
